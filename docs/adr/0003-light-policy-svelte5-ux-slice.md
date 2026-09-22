@@ -31,11 +31,15 @@ metadata.
    profile or global navigation.
 2. `frontend/src/lib/light-policy/client.ts` is the only transport adapter. It
    wraps only existing commands: `get_status`, `get_look_map`,
-   `benni_scene_presets/list_looks`, `set_look_map`, `set_apply_enabled`,
-   `set_brightness_profile` and `set_custom_themes`. No backend command, mock,
-   fixture or future generation API is introduced.
-3. The module exposes only five internal views: Übersicht, Look-Zuordnung,
-   Feste Modi, Helligkeit and Diagnose. Calendar/event CRUD, scene generation,
+   `benni_scene_presets/list_looks`, `set_look_map`, `set_subentry_mappings`,
+   `set_apply_enabled`, `set_brightness_profile` and `set_custom_themes`. No
+   backend command, mock, fixture or future generation API is introduced.
+3. The module exposes six internal views: Übersicht, Look-Zuordnung,
+   Feste Modi, Regeln, Helligkeit and Diagnose. The Rules view added by Issue
+   [#46](https://github.com/Levtos/benni_light_policy/issues/46) edits only the
+   existing Gaming-subentry classifier-to-look mappings. Source creation,
+   classifier binding and priority remain in the native HA subentry flow.
+   Calendar/event CRUD, scene generation,
    domain renaming, Core State changes, Scene Presets changes and Event Ownership
    remain outside this issue.
 4. The primary matrix uses exactly the nine canonical phase IDs from the existing

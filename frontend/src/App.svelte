@@ -6,6 +6,7 @@
   import FixedModesView from "./views/FixedModesView.svelte";
   import OverviewView from "./views/OverviewView.svelte";
   import PhaseMatrixView from "./views/PhaseMatrixView.svelte";
+  import RulesView from "./views/RulesView.svelte";
   import ModuleShell from "./lib/light-policy/ModuleShell.svelte";
   import { LightPolicyStore } from "./lib/light-policy/store.svelte";
 
@@ -28,6 +29,8 @@
     <PhaseMatrixView {store} />
   {:else if store.activeView === "fixed-modes"}
     <FixedModesView {store} />
+  {:else if store.activeView === "rules"}
+    <RulesView {store} />
   {:else if store.activeView === "brightness"}
     <BrightnessView {store} />
   {:else}

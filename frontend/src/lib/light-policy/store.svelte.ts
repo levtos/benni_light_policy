@@ -140,6 +140,12 @@ export class LightPolicyStore {
     });
   }
 
+  async setSubentryMappings(subentryId: string, mappings: Record<string, string>): Promise<void> {
+    await this.mutate("Gaming-Zuordnung speichern", async (client) => {
+      await client.setSubentryMappings(subentryId, mappings);
+    });
+  }
+
   async setApplyEnabled(enabled: boolean): Promise<void> {
     await this.mutate(enabled ? "Apply aktivieren" : "Apply in Shadow setzen", async (client) => {
       await client.setApplyEnabled(enabled);

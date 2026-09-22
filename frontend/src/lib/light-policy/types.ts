@@ -53,7 +53,7 @@ export type UiState =
 
 export type MutationState = "idle" | "pending" | "success" | "error" | "blocked";
 
-export type LightPolicyView = "overview" | "matrix" | "fixed-modes" | "brightness" | "diagnostics";
+export type LightPolicyView = "overview" | "matrix" | "fixed-modes" | "rules" | "brightness" | "diagnostics";
 
 export interface HassState {
   state: string;

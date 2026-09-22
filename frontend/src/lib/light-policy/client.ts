@@ -50,6 +50,16 @@ export class LightPolicyClient {
     });
   }
 
+  setSubentryMappings(
+    subentryId: string,
+    mappings: Record<string, string>,
+  ): Promise<MutationSnapshot & JsonRecord> {
+    return this.request<MutationSnapshot & JsonRecord>(`${DOMAIN}/set_subentry_mappings`, {
+      subentry_id: subentryId,
+      mappings,
+    });
+  }
+
   setApplyEnabled(enabled: boolean): Promise<MutationSnapshot & JsonRecord> {
     return this.request<MutationSnapshot & JsonRecord>(`${DOMAIN}/set_apply_enabled`, {
       enabled,

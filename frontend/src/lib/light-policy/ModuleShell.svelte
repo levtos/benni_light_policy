@@ -2,6 +2,7 @@
   import {
     Activity,
     Gauge,
+    Gamepad2,
     Lightbulb,
     ListChecks,
     RefreshCw,
@@ -19,6 +20,7 @@
     { id: "overview", label: "Übersicht", description: "Aktueller Soll-Zustand und sichere Freigabe", icon: Gauge },
     { id: "matrix", label: "Look-Zuordnung", description: "Neun kanonische Tagesphasen", icon: Table2 },
     { id: "fixed-modes", label: "Feste Modi", description: "Idle, Cinema und bestehende Modi", icon: ListChecks },
+    { id: "rules", label: "Regeln", description: "Gaming-Quellen und ihre Look-Zuordnungen", icon: Gamepad2 },
     { id: "brightness", label: "Helligkeit", description: "Profile, Provenienz und Overrides", icon: SlidersHorizontal },
     { id: "diagnostics", label: "Diagnose", description: "Vertrag, Quellen und Degradationen", icon: Activity },
   ];
@@ -27,6 +29,7 @@
     overview: { title: "Übersicht", description: "Der Light-Policy-Sollzustand aus dem bestehenden Home-Assistant-Vertrag." },
     matrix: { title: "Look-Zuordnung", description: "Neun unabhängige Look-Referenzen je Thema oder Ereignis; Legacy-Werte bleiben sichtbar markiert." },
     "fixed-modes": { title: "Feste Modi", description: "Die bestehenden festen Policy-Modi bleiben vollständig editierbar, einschließlich Idle / Hard-Off." },
+    rules: { title: "Regeln", description: "Classifier-gesteuerte Gaming-Quellen ordnen erkannte Werte vorhandenen Looks zu." },
     brightness: { title: "Helligkeit", description: "Effektive Prozentwerte mit Herkunft; Rohwerte bleiben der Diagnose vorbehalten." },
     diagnostics: { title: "Diagnose", description: "Read-only Einsicht in Zustände, Quellen und bekannte Contract-Grenzen." },
   };

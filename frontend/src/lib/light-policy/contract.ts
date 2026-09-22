@@ -299,6 +299,51 @@ export function coverageFor(
   };
 }
 
+export function directLookCoverage(
+  key: string,
+  ref: string | null | undefined,
+  indexedLooks: Map<string, Look>,
+  looksState: UiState,
+): Coverage {
+  const mappedRef = asString(ref);
+  const availability = looksState === "ready" ? "available" : looksState === "stale" ? "stale" : "unavailable";
+  if (looksState !== "ready") {
+    return {
+      key,
+      ref: mappedRef ?? "",
+      assignment: mappedRef ? "mapped" : "unassigned",
+      availability,
+      status: looksState === "stale" ? "stale" : "unavailable",
+      look: null,
+      isShared: false,
+      notIndividuallyMaintained: !mappedRef,
+    };
+  }
+  if (!mappedRef) {
+    return {
+      key,
+      ref: "",
+      assignment: "unassigned",
+      availability: "available",
+      status: "missing",
+      look: null,
+      isShared: false,
+      notIndividuallyMaintained: true,
+    };
+  }
+  const look = findLook(mappedRef, indexedLooks);
+  return {
+    key,
+    ref: mappedRef,
+    assignment: "mapped",
+    availability: "available",
+    status: look ? "ready" : "invalid",
+    look,
+    isShared: false,
+    notIndividuallyMaintained: false,
+  };
+}
+
 export function rawToPercent(raw: number | null | undefined): number | null {
   if (raw === null || raw === undefined || !Number.isFinite(raw)) return null;
   return Math.round((Math.max(0, Math.min(255, raw)) / 255) * 100);
