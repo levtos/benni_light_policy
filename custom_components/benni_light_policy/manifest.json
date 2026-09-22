@@ -1,7 +1,7 @@
 {
   "domain": "benni_light_policy",
   "name": "Benni Light Policy",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "documentation": "https://github.com/Levtos/benni_light_policy",
   "issue_tracker": "https://github.com/Levtos/benni_light_policy/issues",
   "codeowners": ["@Levtos"],

@@ -4,6 +4,7 @@ import {
   LEGACY_PHASES,
   brightnessProvenance,
   coverageFor,
+  directLookCoverage,
   indexLooks,
   percentToRaw,
   rawToPercent,
@@ -64,6 +65,13 @@ describe("Light Policy UX contract", () => {
     const coverage = coverageFor("spring_early_night", { spring_early_night: "soft" }, new Map(), "unavailable", ["spring_early_night"]);
     expect(coverage.status).toBe("unavailable");
     expect(coverage.availability).toBe("unavailable");
+  });
+
+  it("validates direct gaming look references without inventing fallback semantics", () => {
+    const looks = indexLooks([{ slug: "cinema", name: "Cinema" }]);
+    expect(directLookCoverage("gaming:ps5:1", "cinema", looks, "ready")).toMatchObject({ status: "ready", assignment: "mapped" });
+    expect(directLookCoverage("gaming:ps5:2", "missing", looks, "ready")).toMatchObject({ status: "invalid", assignment: "mapped" });
+    expect(directLookCoverage("gaming:ps5:3", "", looks, "ready")).toMatchObject({ status: "missing", assignment: "unassigned" });
   });
 
   it("round-trips the user-facing percentage with bounded backend raw values", () => {
