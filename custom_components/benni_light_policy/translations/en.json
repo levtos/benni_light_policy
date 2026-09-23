@@ -123,6 +123,32 @@
       "initiate_flow": { "user": "Add gaming policy" },
       "entry_type": "Gaming policy (minihub per source)",
       "step": {
+        "reconfigure": {
+          "title": "Edit gaming policy",
+          "description": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::description%]",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::name%]",
+            "source_id": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::source_id%]",
+            "source_priority": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::source_priority%]",
+            "classifier_entity": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::classifier_entity%]",
+            "mapping_value_0": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_0%]",
+            "mapping_preset_0": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_0%]",
+            "mapping_value_1": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_1%]",
+            "mapping_preset_1": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_1%]",
+            "mapping_value_2": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_2%]",
+            "mapping_preset_2": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_2%]",
+            "mapping_value_3": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_3%]",
+            "mapping_preset_3": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_3%]",
+            "mapping_value_4": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_4%]",
+            "mapping_preset_4": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_4%]",
+            "mapping_value_5": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_5%]",
+            "mapping_preset_5": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_5%]",
+            "mapping_value_6": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_6%]",
+            "mapping_preset_6": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_6%]",
+            "mapping_value_7": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_value_7%]",
+            "mapping_preset_7": "[%key:component::benni_light_policy::config_subentries::gaming::step::user::data::mapping_preset_7%]"
+          }
+        },
         "user": {
           "title": "Gaming minihub (e.g. PC / PS5 / Nintendo)",
           "description": "One subentry per source. The hub reads media_device (from benni_media_state) and matches it against source_id. Up to 8 enum values per source map to a look slug/name. Conflicts between active sources are resolved by source_priority (lower wins; PS5=9, Nintendo=10, Cinema=11, PC=12).",
@@ -155,6 +181,31 @@
       "initiate_flow": { "user": "Add music-party policy" },
       "entry_type": "Music-party minihub",
       "step": {
+        "reconfigure": {
+          "title": "Edit music-party policy",
+          "description": "[%key:component::benni_light_policy::config_subentries::music::step::user::description%]",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::name%]",
+            "classifier_entity": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::classifier_entity%]",
+            "require_birthday": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::require_birthday%]",
+            "mapping_value_0": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_0%]",
+            "mapping_preset_0": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_0%]",
+            "mapping_value_1": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_1%]",
+            "mapping_preset_1": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_1%]",
+            "mapping_value_2": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_2%]",
+            "mapping_preset_2": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_2%]",
+            "mapping_value_3": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_3%]",
+            "mapping_preset_3": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_3%]",
+            "mapping_value_4": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_4%]",
+            "mapping_preset_4": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_4%]",
+            "mapping_value_5": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_5%]",
+            "mapping_preset_5": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_5%]",
+            "mapping_value_6": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_6%]",
+            "mapping_preset_6": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_6%]",
+            "mapping_value_7": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_value_7%]",
+            "mapping_preset_7": "[%key:component::benni_light_policy::config_subentries::music::step::user::data::mapping_preset_7%]"
+          }
+        },
         "user": {
           "title": "Music-party minihub",
           "description": "The music classifier provides values that map to a look (slug/name). Optionally require the calendar theme “geburtstag”.",
@@ -186,6 +237,31 @@
       "initiate_flow": { "user": "Add notification RGB (rings)" },
       "entry_type": "Notification RGB (minihub)",
       "step": {
+        "reconfigure": {
+          "title": "Edit notification RGB",
+          "description": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::description%]",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::name%]",
+            "ring_target_entities": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::ring_target_entities%]",
+            "activity_state_entity": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::activity_state_entity%]",
+            "mapping_value_0": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_0%]",
+            "mapping_preset_0": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_0%]",
+            "mapping_value_1": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_1%]",
+            "mapping_preset_1": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_1%]",
+            "mapping_value_2": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_2%]",
+            "mapping_preset_2": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_2%]",
+            "mapping_value_3": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_3%]",
+            "mapping_preset_3": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_3%]",
+            "mapping_value_4": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_4%]",
+            "mapping_preset_4": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_4%]",
+            "mapping_value_5": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_5%]",
+            "mapping_preset_5": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_5%]",
+            "mapping_value_6": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_6%]",
+            "mapping_preset_6": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_6%]",
+            "mapping_value_7": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_value_7%]",
+            "mapping_preset_7": "[%key:component::benni_light_policy::config_subentries::notification_ring::step::user::data::mapping_preset_7%]"
+          }
+        },
         "user": {
           "title": "Notification RGB (Aqara rings)",
           "description": "Maps Activity State values (e.g. free_time, gaming, sleep) to Aqara effect names. Up to 8 mappings, applied simultaneously to all rings.",
@@ -217,6 +293,14 @@
       "initiate_flow": { "user": "Add hallway policy" },
       "entry_type": "Hallway",
       "step": {
+        "reconfigure": {
+          "title": "Edit hallway policy",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::hallway::step::user::data::name%]",
+            "hallway_light": "[%key:component::benni_light_policy::config_subentries::hallway::step::user::data::hallway_light%]",
+            "hallway_trigger_entities": "[%key:component::benni_light_policy::config_subentries::hallway::step::user::data::hallway_trigger_entities%]"
+          }
+        },
         "user": {
           "title": "Hallway (R14)",
           "data": {
@@ -231,6 +315,15 @@
       "initiate_flow": { "user": "Add bathroom policy" },
       "entry_type": "Bathroom",
       "step": {
+        "reconfigure": {
+          "title": "Edit bathroom policy",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::bathroom::step::user::data::name%]",
+            "bathroom_light": "[%key:component::benni_light_policy::config_subentries::bathroom::step::user::data::bathroom_light%]",
+            "bathroom_vibration_entity": "[%key:component::benni_light_policy::config_subentries::bathroom::step::user::data::bathroom_vibration_entity%]",
+            "bathroom_timeout_seconds": "[%key:component::benni_light_policy::config_subentries::bathroom::step::user::data::bathroom_timeout_seconds%]"
+          }
+        },
         "user": {
           "title": "Bathroom forgetfulness protection (R15)",
           "data": {
@@ -246,6 +339,14 @@
       "initiate_flow": { "user": "Add wake-up light" },
       "entry_type": "Wake-up",
       "step": {
+        "reconfigure": {
+          "title": "Edit wake-up light",
+          "description": "[%key:component::benni_light_policy::config_subentries::wake_up::step::user::description%]",
+          "data": {
+            "name": "[%key:component::benni_light_policy::config_subentries::wake_up::step::user::data::name%]",
+            "wake_up_targets": "[%key:component::benni_light_policy::config_subentries::wake_up::step::user::data::wake_up_targets%]"
+          }
+        },
         "user": {
           "title": "Wake-up light (R6, via Wake Planner → bio_state=waking)",
           "description": "Which lights should turn on when waking up? Multiple lights are supported (e.g. bedroom + living room). The Wake Planner controls the brightness sequence.",

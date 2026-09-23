@@ -7,7 +7,8 @@ Architektur: **Hub + typisierte Subentries**.
 - Pro Anwendungsfall (Gaming, Musik, Notification-RGB, Flur, Bad, Schlafzimmer)
   ein **Subentry** mit NUR seinen eigenen 2–4 Feldern → keine „Wall of Entities".
 
-Entity-Selektoren bewusst ungefiltert (volle Flexibilität).
+Entity-Selektoren bewusst ungefiltert (volle Flexibilität). Gaming-Quellen
+sind dagegen media_device-Tokens und keine Entity-IDs.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .const import (
+    AREA_PREFILL,
     CONF_ACTIVITY_STATE,
     CONF_APPLY_ENABLED,
     CONF_BATHROOM_LIGHT,
@@ -43,6 +45,9 @@ from .const import (
     CONF_HALLWAY_LIGHT,
     CONF_HALLWAY_TRIGGERS,
     CONF_LUX,
+    CONF_MAPPINGS,
+    CONF_MEDIA_CONTEXT,
+    CONF_MEDIA_DEVICE,
     CONF_OVERNIGHT_AWAY,
     CONF_PRESENCE_HOUSEHOLD,
     CONF_PRESENCE_PERSONAL,
@@ -50,19 +55,12 @@ from .const import (
     CONF_REQUIRE_BIRTHDAY,
     CONF_RING_TARGETS,
     CONF_SEASON,
-    CONF_STARTUP_BLOCK_SECONDS,
-    CONF_SYSTEM_READY,
-    CONF_MAPPINGS,
-    CONF_MEDIA_CONTEXT,
-    CONF_MEDIA_DEVICE,
     CONF_SOURCE_ID,
     CONF_SOURCE_PRIORITY,
+    CONF_STARTUP_BLOCK_SECONDS,
+    CONF_SYSTEM_READY,
     CONF_WAKE_TEARDOWN_AREAS,
     CONF_WAKE_UP_TARGETS,
-    AREA_PREFILL,
-    MAPPING_PRESET_PREFIX,
-    MAPPING_SLOT_COUNT,
-    MAPPING_VALUE_PREFIX,
     CONF_WEATHER,
     CONFIG_ENTRY_VERSION,
     DEFAULT_APPLY_ENABLED,
@@ -70,15 +68,20 @@ from .const import (
     DEFAULT_STARTUP_BLOCK_SECONDS,
     DOMAIN,
     ENTITY_PREFILL,
+    GAMING_DEFAULT_PRIORITY,
     GROUP_PREFILL,
-    SUBENTRY_PREFILL,
+    MAPPING_PRESET_PREFIX,
+    MAPPING_SLOT_COUNT,
+    MAPPING_VALUE_PREFIX,
     SUBENTRY_BATHROOM,
-    SUBENTRY_WAKE_UP,
     SUBENTRY_GAMING,
     SUBENTRY_HALLWAY,
     SUBENTRY_MUSIC,
     SUBENTRY_NOTIFICATION_RING,
+    SUBENTRY_PREFILL,
+    SUBENTRY_WAKE_UP,
 )
+from .subentry_titles import SUBENTRY_DEFAULT_TITLE, default_subentry_title
 
 # --- Selektoren (ungefiltert) ---
 _ENTITY = selector.EntitySelector(selector.EntitySelectorConfig())
@@ -92,6 +95,21 @@ _LIGHT_OR_SWITCH = selector.EntitySelector(
 )
 _BOOL = selector.BooleanSelector()
 _TEXT = selector.TextSelector(selector.TextSelectorConfig())
+_SOURCE_ID = selector.SelectSelector(selector.SelectSelectorConfig(
+    options=list(GAMING_DEFAULT_PRIORITY),
+    mode=selector.SelectSelectorMode.DROPDOWN,
+    custom_value=True,
+))
+
+
+def _source_id(value: str) -> str:
+    """Accept future source tokens, but never an HA entity ID."""
+    token = value.strip().lower()
+    if not token or not all(ch.isalnum() or ch in "_-" for ch in token):
+        raise vol.Invalid("source_id must be a media_device token, not an entity ID")
+    return token
+
+
 _SECONDS = vol.All(vol.Coerce(int), vol.Range(min=0, max=86400))
 _TIMEOUT_SECONDS = vol.All(vol.Coerce(int), vol.Range(min=1, max=86400))
 _PRIORITY = vol.All(vol.Coerce(int), vol.Range(min=0, max=1000))
@@ -111,7 +129,7 @@ SELECTORS: dict[str, Any] = {
     CONF_CROSSFADE_SECONDS: _SECONDS,
     # Subentry-Felder (Minihub-Schema)
     CONF_CLASSIFIER_ENTITY: _ENTITY,
-    CONF_SOURCE_ID: _TEXT, CONF_SOURCE_PRIORITY: _PRIORITY,
+    CONF_SOURCE_ID: vol.All(_SOURCE_ID, _source_id), CONF_SOURCE_PRIORITY: _PRIORITY,
     CONF_REQUIRE_BIRTHDAY: _BOOL, CONF_RING_TARGETS: _LIGHTS,
     CONF_HALLWAY_LIGHT: _LIGHT, CONF_HALLWAY_TRIGGERS: _ENTITIES,
     CONF_BATHROOM_LIGHT: _LIGHT_OR_SWITCH, CONF_BATHROOM_VIBRATION: _ENTITY,
@@ -157,12 +175,9 @@ SUBENTRY_FIELDS: dict[str, tuple[str, ...]] = {
 SUBENTRY_HAS_MAPPINGS: frozenset[str] = frozenset({
     SUBENTRY_GAMING, SUBENTRY_MUSIC, SUBENTRY_NOTIFICATION_RING,
 })
-SUBENTRY_DEFAULT_TITLE: dict[str, str] = {
-    SUBENTRY_GAMING: "Gaming", SUBENTRY_MUSIC: "Musik-Party",
-    SUBENTRY_NOTIFICATION_RING: "Notification RGB", SUBENTRY_HALLWAY: "Flur",
-    SUBENTRY_BATHROOM: "Bad", SUBENTRY_WAKE_UP: "Wake-Up",
-}
 def _marker(key: str, defaults: dict[str, Any]):
+    if key == CONF_SOURCE_ID:
+        return vol.Required(key, default=defaults[key]) if defaults.get(key) else vol.Required(key)
     if key in INT_DEFAULTS:
         return vol.Optional(key, default=defaults.get(key, INT_DEFAULTS[key]))
     if key in BOOL_KEYS:
@@ -304,8 +319,7 @@ class LightPolicyOptionsFlow(OptionsFlow):
 
 # --------------------------------------------------------------------------- #
 # Subentry-Flows — pro Typ eine kleine Klasse (Typ als eigenes Klassen-Attribut,
-# kein Verlass auf HA-interne Typ-Attribute). v1: nur Anlegen; zum Ändern
-# Subentry löschen + neu anlegen (Reconfigure folgt später).
+# kein Verlass auf HA-interne Typ-Attribute).
 # --------------------------------------------------------------------------- #
 def _slot_keys(i: int) -> tuple[str, str]:
     return f"{MAPPING_VALUE_PREFIX}{i}", f"{MAPPING_PRESET_PREFIX}{i}"
@@ -345,10 +359,13 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         stype = self.policy_type
         if user_input is not None:
-            title = user_input.pop("name", None) or SUBENTRY_DEFAULT_TITLE.get(stype, stype)
+            data = dict(user_input)
+            name = data.pop("name", None)
             if stype in SUBENTRY_HAS_MAPPINGS:
-                user_input[CONF_MAPPINGS] = _pack_mappings(user_input)
-            return self.async_create_entry(title=title, data=user_input)
+                data[CONF_MAPPINGS] = _pack_mappings(data)
+            default = SUBENTRY_DEFAULT_TITLE.get(stype, stype)
+            title = name if name and name != default else default_subentry_title(stype, data)
+            return self.async_create_entry(title=title, data=data)
 
         defaults: dict[str, Any] = {}
         # Auto-Prefill eindeutiger Subentry-Felder (z.B. Awake-Dauer), wenn vorhanden.
@@ -356,10 +373,48 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
             cand = SUBENTRY_PREFILL.get(key)
             if cand and key not in defaults and _exists(self.hass, cand):
                 defaults[key] = cand
+        return self._show_subentry_form("user", defaults, SUBENTRY_DEFAULT_TITLE.get(stype, stype))
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Edit an existing subentry without dropping its mappings or other data."""
+        subentry = self._get_reconfigure_subentry()
+        if user_input is not None:
+            data = {**subentry.data, **user_input}
+            name = data.pop("name", subentry.title)
+            if self.policy_type in SUBENTRY_HAS_MAPPINGS:
+                existing = subentry.data.get(CONF_MAPPINGS) or {}
+                if any(
+                    key in user_input
+                    for i in range(1, MAPPING_SLOT_COUNT + 1)
+                    for key in _slot_keys(i)
+                ):
+                    visible_keys = set(list(existing)[:MAPPING_SLOT_COUNT]) if isinstance(existing, dict) else set()
+                    retained = (
+                        {key: value for key, value in existing.items() if key not in visible_keys}
+                        if isinstance(existing, dict) else {}
+                    )
+                    data[CONF_MAPPINGS] = {**retained, **_pack_mappings(data)}
+            previous_default = default_subentry_title(self.policy_type, subentry.data)
+            if not name or name in (SUBENTRY_DEFAULT_TITLE.get(self.policy_type), previous_default):
+                title = default_subentry_title(self.policy_type, data)
+            else:
+                title = name
+            return self.async_update_and_abort(
+                self._get_entry(), subentry, data=data, title=title
+            )
+
+        return self._show_subentry_form("reconfigure", dict(subentry.data), subentry.title)
+
+    def _show_subentry_form(
+        self, step_id: str, defaults: dict[str, Any], title: str
+    ) -> FlowResult:
+        stype = self.policy_type
         if stype in SUBENTRY_HAS_MAPPINGS:
             _unpack_mappings(defaults)
         fields: dict[Any, Any] = {
-            vol.Optional("name", default=SUBENTRY_DEFAULT_TITLE.get(stype, stype)): _TEXT
+            vol.Optional("name", default=title): _TEXT
         }
         for key in SUBENTRY_FIELDS[stype]:
             fields[_marker(key, defaults)] = SELECTORS[key]
@@ -368,7 +423,7 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
                 vkey, pkey = _slot_keys(i)
                 fields[_marker(vkey, defaults)] = _TEXT
                 fields[_marker(pkey, defaults)] = _TEXT
-        return self.async_show_form(step_id="user", data_schema=vol.Schema(fields))
+        return self.async_show_form(step_id=step_id, data_schema=vol.Schema(fields))
 
 
 class GamingSubentryFlow(_BasePolicySubentryFlow):
