@@ -620,6 +620,7 @@ class LightPolicyCoordinator:
             self._last_applied_hash = None
         self._prev_presence_transition = ctx.presence_transition
 
+        extra_policies, subentry_diagnostics = self._build_extra_policies(ctx)
         plan = policy.decide(
             ctx,
             lux_gate_on=gate,
@@ -627,8 +628,9 @@ class LightPolicyCoordinator:
             apply_enabled=self.apply_enabled,
             manual_off_active=self._manual_off,
             brightness_profile=self._opt(CONF_BRIGHTNESS),
-            extra_policies=self._build_extra_policies(),
+            extra_policies=extra_policies,
         )
+        plan.subentry_diagnostics.extend(subentry_diagnostics)
 
         if self._startup_recovery.pending:
             # The plan remains fully visible, but stale/unknown/unavailable/
@@ -689,10 +691,13 @@ class LightPolicyCoordinator:
             return None
         return st.state
 
-    def _build_extra_policies(self) -> list[policy.PolicyDef]:
+    def _build_extra_policies(
+        self, ctx: policy.Context
+    ) -> tuple[list[policy.PolicyDef], list[dict[str, str]]]:
         """Subentry-getriebene Policies: Gaming/Musik (Classifier+Mapping)
         + Wake-Up (vereinigte Ziel-Lampen aller wake_up-Subentries)."""
         out: list[policy.PolicyDef] = []
+        diagnostics: list[dict[str, str]] = []
         wake_up_targets: list[str] = []
         for sub in self.entry.subentries.values():
             d = sub.data
@@ -701,18 +706,24 @@ class LightPolicyCoordinator:
                     if isinstance(eid, str) and eid and eid not in wake_up_targets:
                         wake_up_targets.append(eid)
                 continue
+            if sub.subentry_type not in (SUBENTRY_GAMING, SUBENTRY_MUSIC):
+                continue
+            raw_source_id = d.get(CONF_SOURCE_ID)
+            source_id = (
+                raw_source_id.strip().lower()
+                if isinstance(raw_source_id, str)
+                else ""
+            )
             # Minihub: mappings = dict {classifier_value (str) → preset_uuid (str)}
             mappings = d.get(CONF_MAPPINGS) or {}
+            value = self._read_entity(d.get(CONF_CLASSIFIER_ENTITY))
+            diagnostics.extend(policy.mapping_subentry_diagnostics(
+                sub.subentry_id, sub.subentry_type, source_id, value, mappings, ctx,
+                require_birthday=bool(d.get(CONF_REQUIRE_BIRTHDAY, True)),
+            ))
             if not isinstance(mappings, dict) or not mappings:
                 continue
-            value = self._read_entity(d.get(CONF_CLASSIFIER_ENTITY))
             if sub.subentry_type == SUBENTRY_GAMING:
-                raw_source_id = d.get(CONF_SOURCE_ID)
-                source_id = (
-                    raw_source_id.strip().lower()
-                    if isinstance(raw_source_id, str)
-                    else ""
-                )
                 if not source_id:
                     continue
                 priority = policy.resolve_priority(
@@ -729,7 +740,7 @@ class LightPolicyCoordinator:
                 ))
         if wake_up_targets:
             out.append(policy.make_wake_up_policy(wake_up_targets))
-        return out
+        return out, diagnostics
 
     # (R16 Bettgeh-Signal entfernt — User: stattdessen Wake-Up via wake_planner.)
 
