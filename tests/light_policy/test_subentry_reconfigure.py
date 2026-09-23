@@ -102,10 +102,63 @@ def test_source_selector_has_known_tokens_custom_path_and_rejects_entity_id(conf
     select = config_flow._SOURCE_ID
     assert select.config.options == list(C.GAMING_DEFAULT_PRIORITY)
     assert select.config.custom_value is True
+    assert config_flow.SELECTORS[C.CONF_SOURCE_ID] is select
     assert config_flow.SELECTORS[C.CONF_SOURCE_ID]("ps5") == "ps5"
     assert config_flow.SELECTORS[C.CONF_SOURCE_ID]("future_console") == "future_console"
     with pytest.raises(vol.Invalid):
-        config_flow.SELECTORS[C.CONF_SOURCE_ID]("media_player.living_ps5")
+        config_flow._source_id("media_player.living_ps5")
+
+
+@pytest.mark.parametrize("reconfigure", [False, True])
+def test_gaming_form_renders_and_saves_custom_source(config_flow, reconfigure):
+    subentry = SimpleNamespace(title="Gaming", data={C.CONF_SOURCE_ID: "pc"})
+    flow = _flow(config_flow.GamingSubentryFlow, subentry)
+    step = flow.async_step_reconfigure if reconfigure else flow.async_step_user
+    form = asyncio.run(step())
+    source_field = next(
+        value for key, value in form["data_schema"].schema.items()
+        if key.schema == C.CONF_SOURCE_ID
+    )
+    assert source_field is config_flow._SOURCE_ID
+    submitted = form["data_schema"]({C.CONF_SOURCE_ID: "future_console"})
+    result = asyncio.run(step(submitted))
+    assert result["type"] == ("abort" if reconfigure else "create_entry")
+    assert result["data"][C.CONF_SOURCE_ID] == "future_console"
+
+
+@pytest.mark.parametrize("reconfigure", [False, True])
+def test_gaming_form_rejects_entity_id_with_field_error(config_flow, reconfigure):
+    subentry = SimpleNamespace(title="Gaming", data={C.CONF_SOURCE_ID: "pc"})
+    flow = _flow(config_flow.GamingSubentryFlow, subentry)
+    step = flow.async_step_reconfigure if reconfigure else flow.async_step_user
+    result = asyncio.run(step({
+        C.CONF_SOURCE_ID: "media_player.living_ps5",
+        C.CONF_CLASSIFIER_ENTITY: "sensor.title_classifier_ps5_enum",
+        "mapping_value_0": "1",
+        "mapping_preset_0": "diablo",
+    }))
+    assert result["type"] == "form"
+    assert result["errors"] == {C.CONF_SOURCE_ID: "invalid_source_id"}
+    defaults = result["data_schema"]({})
+    assert defaults[C.CONF_SOURCE_ID] == "media_player.living_ps5"
+    assert defaults["mapping_value_0"] == "1"
+    assert defaults["mapping_preset_0"] == "diablo"
+
+
+def test_gaming_reconfigure_repairs_existing_entity_id_without_losing_mappings(config_flow):
+    mappings = {"1": "diablo"}
+    subentry = SimpleNamespace(title="PS5 Gaming", data={
+        C.CONF_SOURCE_ID: "media_player.living_ps5",
+        C.CONF_MAPPINGS: mappings,
+    })
+    flow = _flow(config_flow.GamingSubentryFlow, subentry)
+    form = asyncio.run(flow.async_step_reconfigure())
+    assert form["data_schema"]({})[C.CONF_SOURCE_ID] == "media_player.living_ps5"
+    submitted = form["data_schema"]({C.CONF_SOURCE_ID: "ps5"})
+    result = asyncio.run(flow.async_step_reconfigure(submitted))
+    assert result["type"] == "abort"
+    assert result["data"][C.CONF_SOURCE_ID] == "ps5"
+    assert result["data"][C.CONF_MAPPINGS] == mappings
 
 
 def test_gaming_reconfigure_prefills_and_preserves_all_mappings(config_flow):
