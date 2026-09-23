@@ -22,6 +22,7 @@ from .const import (
 )
 from .coordinator import LightPolicyCoordinator
 from .migration import ensure_ceiling_rgb_in_group_all, migrate_legacy_entity_ids
+from .subentry_titles import migrate_subentry_titles
 from .view import async_remove_view, async_setup_view
 from .websocket_api import async_setup_websocket_api
 
@@ -50,6 +51,10 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    # Idempotent setup migration: only untouched generic Gaming/Music titles.
+    # Run before registering the update listener to avoid an extra reload.
+    migrate_subentry_titles(entry, hass.config_entries.async_update_subentry)
+
     coord = LightPolicyCoordinator(hass, entry)
     await coord.async_load()
     await coord.async_evaluate()
