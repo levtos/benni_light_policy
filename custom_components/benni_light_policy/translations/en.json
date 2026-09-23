@@ -175,6 +175,9 @@
             "mapping_preset_7": "Slot 8 · Look slug/name"
           }
         }
+      },
+      "error": {
+        "invalid_source_id": "Source must be a media_device value such as ps5 or pc, not an entity ID."
       }
     },
     "music": {

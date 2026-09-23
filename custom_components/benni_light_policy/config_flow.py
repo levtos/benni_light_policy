@@ -129,7 +129,7 @@ SELECTORS: dict[str, Any] = {
     CONF_CROSSFADE_SECONDS: _SECONDS,
     # Subentry-Felder (Minihub-Schema)
     CONF_CLASSIFIER_ENTITY: _ENTITY,
-    CONF_SOURCE_ID: vol.All(_SOURCE_ID, _source_id), CONF_SOURCE_PRIORITY: _PRIORITY,
+    CONF_SOURCE_ID: _SOURCE_ID, CONF_SOURCE_PRIORITY: _PRIORITY,
     CONF_REQUIRE_BIRTHDAY: _BOOL, CONF_RING_TARGETS: _LIGHTS,
     CONF_HALLWAY_LIGHT: _LIGHT, CONF_HALLWAY_TRIGGERS: _ENTITIES,
     CONF_BATHROOM_LIGHT: _LIGHT_OR_SWITCH, CONF_BATHROOM_VIBRATION: _ENTITY,
@@ -359,7 +359,17 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         stype = self.policy_type
         if user_input is not None:
+            try:
+                source_id = _source_id(user_input[CONF_SOURCE_ID]) if stype == SUBENTRY_GAMING else None
+            except (KeyError, vol.Invalid):
+                return self._show_subentry_form(
+                    "user", dict(user_input),
+                    user_input.get("name") or SUBENTRY_DEFAULT_TITLE[stype],
+                    {CONF_SOURCE_ID: "invalid_source_id"},
+                )
             data = dict(user_input)
+            if source_id is not None:
+                data[CONF_SOURCE_ID] = source_id
             name = data.pop("name", None)
             if stype in SUBENTRY_HAS_MAPPINGS:
                 data[CONF_MAPPINGS] = _pack_mappings(data)
@@ -381,6 +391,18 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
         """Edit an existing subentry without dropping its mappings or other data."""
         subentry = self._get_reconfigure_subentry()
         if user_input is not None:
+            if self.policy_type == SUBENTRY_GAMING:
+                try:
+                    source_id = _source_id(
+                        user_input.get(CONF_SOURCE_ID, subentry.data.get(CONF_SOURCE_ID, ""))
+                    )
+                except (KeyError, vol.Invalid):
+                    return self._show_subentry_form(
+                        "reconfigure", {**subentry.data, **user_input},
+                        user_input.get("name", subentry.title),
+                        {CONF_SOURCE_ID: "invalid_source_id"},
+                    )
+                user_input = {**user_input, CONF_SOURCE_ID: source_id}
             data = {**subentry.data, **user_input}
             name = data.pop("name", subentry.title)
             if self.policy_type in SUBENTRY_HAS_MAPPINGS:
@@ -408,7 +430,8 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
         return self._show_subentry_form("reconfigure", dict(subentry.data), subentry.title)
 
     def _show_subentry_form(
-        self, step_id: str, defaults: dict[str, Any], title: str
+        self, step_id: str, defaults: dict[str, Any], title: str,
+        errors: dict[str, str] | None = None,
     ) -> FlowResult:
         stype = self.policy_type
         if stype in SUBENTRY_HAS_MAPPINGS:
@@ -423,7 +446,10 @@ class _BasePolicySubentryFlow(ConfigSubentryFlow):
                 vkey, pkey = _slot_keys(i)
                 fields[_marker(vkey, defaults)] = _TEXT
                 fields[_marker(pkey, defaults)] = _TEXT
-        return self.async_show_form(step_id=step_id, data_schema=vol.Schema(fields))
+        data_schema = vol.Schema(fields)
+        if errors:
+            return self.async_show_form(step_id=step_id, data_schema=data_schema, errors=errors)
+        return self.async_show_form(step_id=step_id, data_schema=data_schema)
 
 
 class GamingSubentryFlow(_BasePolicySubentryFlow):
