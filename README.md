@@ -2,6 +2,20 @@
 
 Licht-Policy als eigenständige HACS-Custom-Integration.
 
+## Gaming-/Musik-Subentry-Diagnose
+
+`sensor.light_policy_living_room_debug` zeigt bei wirkungslosen Gaming- oder
+Musik-Subentries einen Diagnosehinweis im Zustand und die vollständige Liste
+unter `subentry_diagnostics`. Derselbe Wert steht im Plan-Snapshot des Sensors
+und in `benni_light_policy/get_status` unter `plan.subentry_diagnostics`.
+`missing_mappings` bezeichnet eine fehlende oder leere Mapping-Tabelle,
+`missing_source_id` eine leere/ungültige Gaming-Quelle und
+`classifier_unmapped` einen aktiven Classifier-Wert ohne wirksamen Look-Eintrag.
+`classifier_unavailable` kennzeichnet einen fehlenden Classifier-Wert bei
+passendem Gaming-/Musik-Gate. Eine leere Diagnoseliste kann auch bedeuten, dass
+keine entsprechende Subentry vorhanden oder ihre Quelle gerade inaktiv ist.
+Diese Hinweise sperren den normalen Tagesphasen-Fallback nicht.
+
 ## PS/S sleep context (#59)
 
 `provisional_sleep` und `sleep` sind gleichwertige terminale

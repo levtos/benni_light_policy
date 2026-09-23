@@ -49,6 +49,8 @@ from .const import (
     PRESENCE_SIM_TRIGGERS,
     PRESENCE_TRANSITION_COMING_HOME,
     SEASON_WINTER,
+    SUBENTRY_GAMING,
+    SUBENTRY_MUSIC,
     SUPPORTED_DAY_PHASES,
     TV_MEDIA_CONTEXTS,
     WEATHER_DARK_DROP_RATIO,
@@ -121,6 +123,7 @@ class Plan:
     reason: str = ""
     lux_gate_on: bool = False
     blockers: list[str] = field(default_factory=list)
+    subentry_diagnostics: list[dict[str, str]] = field(default_factory=list)
     apply_allowed: bool = True
 
     @property
@@ -144,6 +147,19 @@ class Plan:
         blob = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
+    @property
+    def debug_reason(self) -> str:
+        if not self.subentry_diagnostics:
+            return self.reason
+        first = self.subentry_diagnostics[0]
+        source = first.get("source_id") or first["subentry_id"]
+        issue = f"{first['type']}:{source}:{first['code']}"
+        if first.get("classifier_value"):
+            issue += f"={first['classifier_value']}"
+        remaining = len(self.subentry_diagnostics) - 1
+        suffix = f" (+{remaining} weitere)" if remaining else ""
+        return f"{self.reason} | {issue}{suffix}"[-255:]
+
     def as_dict(self) -> dict[str, Any]:
         return {
             "mode": self.mode,
@@ -158,6 +174,7 @@ class Plan:
             "lux_gate_on": self.lux_gate_on,
             "scene_hash": self.scene_hash,
             "blockers": list(self.blockers),
+            "subentry_diagnostics": [dict(item) for item in self.subentry_diagnostics],
             "apply_allowed": self.apply_allowed,
         }
 
@@ -546,6 +563,59 @@ POLICY_KINDS: tuple[str, ...] = tuple(p.kind for p in LIVING_ROOM_POLICIES)
 
 
 # --- Subentry-Minihubs (Policy-Kategorie mit interner Mapping-Tabelle) -----------
+def _classifier_mapping_issue(
+    classifier_value: str | None, mappings: dict[str, str]
+) -> str | None:
+    if not isinstance(classifier_value, str) or not classifier_value.strip():
+        return "classifier_unavailable"
+    preset = mappings.get(classifier_value)
+    if not isinstance(preset, str) or not preset.strip():
+        return "classifier_unmapped"
+    return None
+
+
+def mapping_subentry_diagnostics(
+    subentry_id: str,
+    subentry_type: str,
+    source_id: str,
+    classifier_value: str | None,
+    mappings: Any,
+    ctx: Context,
+    *,
+    require_birthday: bool = True,
+) -> list[dict[str, str]]:
+    """Explain ineffective Gaming/Music rules without changing arbitration."""
+    if subentry_type not in (SUBENTRY_GAMING, SUBENTRY_MUSIC):
+        return []
+    base = {"subentry_id": subentry_id, "type": subentry_type}
+    if subentry_type == SUBENTRY_GAMING and source_id:
+        base["source_id"] = source_id
+    issues: list[dict[str, str]] = []
+    if subentry_type == SUBENTRY_GAMING and not source_id:
+        issues.append({**base, "code": "missing_source_id"})
+    if not isinstance(mappings, dict) or not mappings:
+        code = "missing_mappings" if not mappings else "invalid_mappings"
+        issues.append({**base, "code": code})
+    if issues:
+        return issues
+
+    if subentry_type == SUBENTRY_GAMING:
+        active = ctx.media_device == source_id and ctx.activity_state in GAMING_ACTIVITY_STATES
+    else:
+        active = (
+            ctx.activity_state in ACTIVITY_PRESET_DRIVING
+            and (not require_birthday or (ctx.calendar_theme or "").lower() == CALENDAR_BIRTHDAY)
+        )
+    if active:
+        issue = _classifier_mapping_issue(classifier_value, mappings)
+        if issue:
+            detail = {**base, "code": issue}
+            if isinstance(classifier_value, str) and classifier_value.strip():
+                detail["classifier_value"] = classifier_value
+            issues.append(detail)
+    return issues
+
+
 def make_gaming_policy(
     source_id: str,
     classifier_value: str | None,
@@ -572,12 +642,9 @@ def make_gaming_policy(
         # nutzt): der Activity-Vertrag liefert bei aktivem Spiel `gaming`.
         if ctx.activity_state not in GAMING_ACTIVITY_STATES:
             return None
-        if not isinstance(classifier_value, str) or not classifier_value.strip():
+        if _classifier_mapping_issue(classifier_value, mappings):
             return None
-        preset = mappings.get(classifier_value)
-        if not isinstance(preset, str) or not preset.strip():
-            return None
-        preset = preset.strip()
+        preset = mappings[classifier_value].strip()
         # Brightness wie bei den Tagesphasen-Modi aus dem Profil (theme_phase) —
         # Gaming-Looks sollen die Tageszeit-/Theme-Helligkeit respektieren, nicht
         # auf der Preset-Default (255) landen. (Doku: „Brightness aus der Tagesphase".)
@@ -611,12 +678,9 @@ def make_music_policy(
             return None
         if require_birthday and (ctx.calendar_theme or "").lower() != CALENDAR_BIRTHDAY:
             return None
-        if not isinstance(classifier_value, str) or not classifier_value.strip():
+        if _classifier_mapping_issue(classifier_value, mappings):
             return None
-        preset = mappings.get(classifier_value)
-        if not isinstance(preset, str) or not preset.strip():
-            return None
-        preset = preset.strip()
+        preset = mappings[classifier_value].strip()
         phase = _awake_phase(ctx) or "early_evening"
         return Plan(
             mode=MODE_MUSIC_PARTY, preset_enum=preset,

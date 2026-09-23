@@ -167,7 +167,7 @@ class DebugSensor(LightPolicyEntity, SensorEntity):
     @property
     def native_value(self):
         p = self.coord.last_plan
-        return p.reason if p else None
+        return p.debug_reason if p else None
 
     @property
     def extra_state_attributes(self):
@@ -178,4 +178,5 @@ class DebugSensor(LightPolicyEntity, SensorEntity):
         p = self.coord.last_plan
         if p:
             attrs["plan"] = p.as_dict()
+            attrs["subentry_diagnostics"] = [dict(item) for item in p.subentry_diagnostics]
         return attrs
