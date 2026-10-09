@@ -1,3 +1,5 @@
+![AURORA](brand/logos/logo-256.png)
+
 # benni_light_policy
 
 Licht-Policy als eigenständige HACS-Custom-Integration.
@@ -40,3 +42,8 @@ bestehenden ConfigEntries automatisch auf die Core-Integrationen:
   `sensor.benni_core_state_*` clean IDs
 - `binary_sensor.benni_media_context_entertainment_active` ->
   `binary_sensor.benni_media_state_entertainment_active`
+
+
+## Unicorn Station branding
+
+**AURORA** is the product brand. See [asset provenance and HA display conventions](brand/README.md). Technical identities and behavior remain unchanged.
