@@ -1,0 +1,38 @@
+{
+  "brand": "AURORA",
+  "repository": "levtos/benni_light_policy",
+  "domain": "benni_light_policy",
+  "original_sha256": "85a6dc89b49e2aa4fe7f55fe77602f282920f264f96afc8b32e54f80777e6779",
+  "original_size": [
+    1254,
+    1254
+  ],
+  "original_mode": "RGB",
+  "icon_crop_xyxy": [
+    177,
+    0,
+    1077,
+    900
+  ],
+  "resampling": "Pillow LANCZOS",
+  "files": {
+    "brand/icons/icon-128.png": "d6bb7b0a6bd3b81fcb1d8625d398e8e6f350e2b005441827367ebccc67b9699b",
+    "brand/icons/icon-256.png": "46ae6c0840d62f43a715204f0c563ad0395160fa53ce8aa614b4f4b2d226b4f2",
+    "brand/icons/icon-32.png": "0fa993fc1a645c619f6dd66475e841b283a7a0a93e399627dd076677aa129086",
+    "brand/icons/icon-512.png": "4722d890f68af9db1d5629852673001182919e5422e76a48ab99ebe8b307051f",
+    "brand/icons/icon-64.png": "a3874a7b12a14900f5091a39c7be993975f1728ec15a8ec4b87b106a9693f41d",
+    "brand/logos/logo-1024.png": "8b981a57614b06669fcd426545ef31639fc46d290f76ccd8952037a2fee0a94b",
+    "brand/logos/logo-128.png": "91bf398a5e01bb294d8ef92de428216a7671d62cd5208167f25fbe7399bb887b",
+    "brand/logos/logo-256.png": "6b0183eccacc1580e0601a5ccfa3488e6f6823c4e977260681cd49e21037db17",
+    "brand/logos/logo-512.png": "3b4ed9201c39bdd7df10105099a80d9095f77395be0b07e82dda13a8cfa6f2aa",
+    "brand/original/AURORA.png": "85a6dc89b49e2aa4fe7f55fe77602f282920f264f96afc8b32e54f80777e6779",
+    "custom_components/benni_light_policy/brand/dark_icon.png": "46ae6c0840d62f43a715204f0c563ad0395160fa53ce8aa614b4f4b2d226b4f2",
+    "custom_components/benni_light_policy/brand/dark_icon@2x.png": "4722d890f68af9db1d5629852673001182919e5422e76a48ab99ebe8b307051f",
+    "custom_components/benni_light_policy/brand/dark_logo.png": "6b0183eccacc1580e0601a5ccfa3488e6f6823c4e977260681cd49e21037db17",
+    "custom_components/benni_light_policy/brand/dark_logo@2x.png": "3b4ed9201c39bdd7df10105099a80d9095f77395be0b07e82dda13a8cfa6f2aa",
+    "custom_components/benni_light_policy/brand/icon.png": "46ae6c0840d62f43a715204f0c563ad0395160fa53ce8aa614b4f4b2d226b4f2",
+    "custom_components/benni_light_policy/brand/icon@2x.png": "4722d890f68af9db1d5629852673001182919e5422e76a48ab99ebe8b307051f",
+    "custom_components/benni_light_policy/brand/logo.png": "6b0183eccacc1580e0601a5ccfa3488e6f6823c4e977260681cd49e21037db17",
+    "custom_components/benni_light_policy/brand/logo@2x.png": "3b4ed9201c39bdd7df10105099a80d9095f77395be0b07e82dda13a8cfa6f2aa"
+  }
+}
